@@ -146,3 +146,31 @@ After completing this lab, you will:
 ✅ Structure projects for portability and collaboration
 
 These scripting and packaging skills are essential for building automation tools and working in modern Python development workflows.
+
+## Usage
+
+Install the required packages:
+
+```bash
+pip install -r requirements.txt
+```
+
+Generate a dated log with default sample entries:
+
+```bash
+python generate_log.py generate-log
+```
+
+Generate a dated log from an API source:
+
+```bash
+python generate_log.py generate-log --source api
+```
+
+Use task commands:
+
+```bash
+python generate_log.py add-task "Write automation report"
+python generate_log.py complete-task 1
+python generate_log.py list-tasks
+```
