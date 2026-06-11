@@ -3,10 +3,15 @@ import os
 from datetime import datetime
 
 import requests
-from rich.console import Console
-from rich.table import Table
 
-console = Console()
+try:
+    from rich.console import Console
+    from rich.table import Table
+    console = Console()
+    rich_enabled = True
+except ImportError:
+    console = None
+    rich_enabled = False
 
 
 class TaskManager:
@@ -52,6 +57,13 @@ class TaskManager:
         return self.tasks
 
 
+def print_message(message):
+    if rich_enabled and console is not None:
+        console.print(message)
+    else:
+        print(message)
+
+
 def fetch_data():
     url = "https://jsonplaceholder.typicode.com/posts"
     response = requests.get(url, timeout=10)
@@ -74,26 +86,31 @@ def generate_log(data):
         for entry in data:
             file.write(f"{entry}\n")
 
-    console.print(f"Log written to [bold green]{filename}[/].")
+    print_message(f"Log written to {filename}")
     return filename
 
 
 def display_tasks(task_manager):
     tasks = task_manager.list_tasks()
     if not tasks:
-        console.print("No tasks found.")
+        print_message("No tasks found.")
         return
 
-    table = Table(title="Task List")
-    table.add_column("#", justify="right")
-    table.add_column("Status", justify="center")
-    table.add_column("Description", justify="left")
+    if rich_enabled and console is not None:
+        table = Table(title="Task List")
+        table.add_column("#", justify="right")
+        table.add_column("Status", justify="center")
+        table.add_column("Description", justify="left")
 
-    for index, task in enumerate(tasks, start=1):
-        status = "✅" if task["complete"] else "🟩"
-        table.add_row(str(index), status, task["description"])
+        for index, task in enumerate(tasks, start=1):
+            status = "✅" if task["complete"] else "🟩"
+            table.add_row(str(index), status, task["description"])
 
-    console.print(table)
+        console.print(table)
+    else:
+        for index, task in enumerate(tasks, start=1):
+            status = "[x]" if task["complete"] else "[ ]"
+            print(f"{index}. {status} {task['description']}")
 
 
 def main(argv=None):
@@ -132,12 +149,12 @@ def main(argv=None):
     elif args.command == "add-task":
         manager = TaskManager()
         task_number = manager.add_task(args.description)
-        console.print(f"Added task [bold]{task_number}[/]: {args.description}")
+        print_message(f"Added task {task_number}: {args.description}")
 
     elif args.command == "complete-task":
         manager = TaskManager()
         manager.complete_task(args.index)
-        console.print(f"Marked task {args.index} as complete.")
+        print_message(f"Marked task {args.index} as complete.")
 
     elif args.command == "list-tasks":
         manager = TaskManager()
